@@ -1,0 +1,23 @@
+version: '3'
+services:
+    db:
+        image: postgres:11
+        restart: always
+        ports:
+            - '5432:5432'
+    cache:
+        image: redis:5
+        ports:
+            - '6379:6379'
+    web:
+        stdin_open: true
+        tty: true
+        build: .
+        volumes:
+            - .:/code
+        ports:
+            - '8000:8000'
+        command: python manage.py runserver 0.0.0.0:8000
+        depends_on:
+            - db
+            - cache

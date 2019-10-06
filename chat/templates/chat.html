@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static customtags %}
+
+{% block title %}Chat{% endblock %}
+
+{% block head %}
+<style media="screen">
+    .container .card {
+        max-width:800px
+    }
+    .card-chat {
+        height: 300px;
+        overflow-y: scroll;
+    }
+    .card-chat p {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <h1 class="font-weight-bold">Chat</h1>
+    <div class="card card-body mx-auto text-left">
+        <h3>To: {{ receiver.username }} ({{ receiver.email }}) <a class="btn btn-danger float-right" href="{% url 'home' %}" role="button">Exit</a></h3>
+        <div id="chat-messages" class="card card-body card-chat text-left">
+        </div>
+        <input id="message" class="form-control mt-2 d-none" type="text" placeholder="Type your message...">
+        <button id="send-message" class="btn btn-primary float-right mt-2 d-none">Send</button>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        function addMessageToChat(data) {
+            $("#chat-messages").append("<b>" + data['username'] + ":</b> <p>" + data['message'] + "</p><br>");
+        };
+
+        $.getJSON("{% url 'messages' request.resolver_match.kwargs.chatname %}", function(data) {
+            // Add each previous message to the chat.
+            $.each(data, function(index, value) {
+                addMessageToChat(value);
+            });
+            // Show the message input and the send button. Now you can write!
+            $('#message, #send-message').removeClass('d-none');
+        });
+
+        websocket = new WebSocket(
+            'ws://' + window.location.host +
+            '/ws/chat/{{ request.resolver_match.kwargs.chatname }}/');
+
+        websocket.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+            addMessageToChat(data);
+        };
+
+        websocket.onclose = function(e) {
+            alert('There was a problem. Please refresh the page.');
+        };
+
+        $("#send-message").click(function() {
+            // Prevent user sending empty messages.
+            if ($("#message").val() === "") {return};
+            // Send message through the websocket.
+            websocket.send(JSON.stringify({
+                "username": "{{ user.username }}",
+                "message": $("#message").val()
+            }));
+            // Clear the message input.
+            $("#message").val("");
+        });
+    });
+</script>
+
+{% endblock %}

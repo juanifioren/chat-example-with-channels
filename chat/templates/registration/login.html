@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in{% endblock %}
+
+{% block head %}
+<style media="screen">
+    .form-signin {
+      width: 100%;
+      max-width: 330px;
+      padding: 15px;
+      margin: auto;
+    }
+    .form-signin .checkbox {
+      font-weight: 400;
+    }
+    .form-signin .form-control {
+      position: relative;
+      box-sizing: border-box;
+      height: auto;
+      padding: 10px;
+      font-size: 16px;
+    }
+    .form-signin .form-control:focus {
+      z-index: 2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<form class="form-signin" method="post" action="{% url 'login' %}">
+  {% csrf_token %}
+  <h1 class="h2 mb-3 font-weight-normal">Please sign in</h1>
+  {% if form.errors %}
+  <p>Your username and password didn't match. Please try again.</p>
+  {% endif %}
+  <label for="inputEmail" class="sr-only">{{ form.username.label_tag }}</label>
+  <input id="{{ form.username.id_for_label }}" name="{{ form.username.name }}" type="text" class="form-control" placeholder="Username" required autofocus>
+  <label for="inputPassword" class="sr-only">{{ form.password.label_tag }}</label>
+  <input id="{{ form.password.id_for_label }}" name="{{ form.password.name }}" type="password" class="form-control mt-2" placeholder="Password" required>
+  <button class="btn btn-lg btn-primary btn-block mt-4" type="submit">Enter</button>
+  <input type="hidden" name="next" value="{{ next }}">
+  <p class="mt-5 mb-3 text-muted">&copy; 2019</p>
+</form>
+
+{% endblock %}
